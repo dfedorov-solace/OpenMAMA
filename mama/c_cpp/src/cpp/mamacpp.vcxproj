@@ -327,6 +327,9 @@
     <ClCompile Include="MamaTransport.cpp" />
     <ClCompile Include="MamaTransportMap.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

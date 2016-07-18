@@ -174,6 +174,11 @@ mamaMsg_destroy (mamaMsg msg)
         mamaMsg_destroy (impl->mCopy);
         impl->mCopy = NULL;
     }
+    /* Destroy reusable datetime if allocated */
+    if (impl->mCurrentDateTime)
+    {
+        mamaDateTime_destroy(impl->mCurrentDateTime);
+    }
 
     impl->mDqStrategyContext = NULL;
 
@@ -242,18 +247,22 @@ mamaMsg_detach (mamaMsg msg)
                   "Could not detach bridge message.");
         return status;
     }
-    /* Copy the payload */
-    if (MAMA_STATUS_OK != (status =
-       (msg->mPayloadBridge->msgPayloadCopy (impl->mPayload,
-                                             &payload))))
+
+    /* If we don't own the payload yet, detach it */
+    if (0 == impl->mMessageOwner)
     {
-        mama_log(MAMA_LOG_LEVEL_ERROR,
-                 "mamaMsg_detach() Failed. "
-                 "Could not copy native payload [%d]", status);
-        return status;
+        if (MAMA_STATUS_OK != (status =
+           (msg->mPayloadBridge->msgPayloadCopy (impl->mPayload,
+                                                 &payload))))
+        {
+            mama_log(MAMA_LOG_LEVEL_ERROR,
+                     "mamaMsg_detach() Failed. "
+                     "Could not copy native payload [%d]", status);
+            return status;
+        }
+        msg->mPayload = payload;
     }
 
-    msg->mPayload = payload;
     msg->mPayloadBridge->msgPayloadSetParent (impl->mPayload, msg);
     
     /*If this is a dqStrategy cache message*/
@@ -505,6 +514,11 @@ mamaMsg_createForPayloadBridge (mamaMsg* msg, mamaPayloadBridge payloadBridge)
 {
     msgPayload payload;
     mama_status status = MAMA_STATUS_OK;
+
+    if (!msg)
+    {
+        return MAMA_STATUS_NULL_ARG;
+    }
 
     if (MAMA_STATUS_OK !=
        (status = payloadBridge->msgPayloadCreate (&payload)))
@@ -807,6 +821,11 @@ mamaMsg_create (mamaMsg* msg)
     mama_status       status  = MAMA_STATUS_OK;
     mamaPayloadBridge bridge  = mamaInternal_getDefaultPayload ();
     msgPayload        payload = NULL;
+
+    if (!msg)
+    {
+        return MAMA_STATUS_NULL_ARG;
+    }
 
     if (bridge)
     {
@@ -2271,6 +2290,46 @@ mamaMsg_updatePrice(
 }
 
 mama_status
+mamaMsg_updateVectorTime (
+    const mamaMsg         msg,
+    const char*           name,
+    mama_fid_t            fid,
+    const mamaDateTime    value[],
+    mama_size_t           numElements)
+{
+    mamaMsgImpl*    impl    = (mamaMsgImpl*)msg;
+
+    if (!impl || !impl->mPayloadBridge) return MAMA_STATUS_NULL_ARG;
+    CHECK_MODIFY (impl->mMessageOwner);
+
+    return impl->mPayloadBridge->msgPayloadUpdateVectorTime (impl->mPayload,
+                                                             name,
+                                                             fid,
+                                                             value,
+                                                             numElements);
+}
+
+mama_status
+mamaMsg_updateVectorPrice (
+    const mamaMsg         msg,
+    const char*           name,
+    mama_fid_t            fid,
+    const mamaPrice       value[],
+    mama_size_t           numElements)
+{
+    mamaMsgImpl*    impl    = (mamaMsgImpl*)msg;
+
+    if (!impl || !impl->mPayloadBridge) return MAMA_STATUS_NULL_ARG;
+    CHECK_MODIFY (impl->mMessageOwner);
+
+    return impl->mPayloadBridge->msgPayloadUpdateVectorPrice (impl->mPayload,
+                                                              name,
+                                                              fid,
+                                                              value,
+                                                              numElements);
+}
+
+mama_status
 mamaMsg_updateVectorMsg (
     mamaMsg               msg,
     const char*           name,
@@ -3024,7 +3083,7 @@ mamaMsg_getVectorDateTime (
     const mamaMsg         msg,
     const char*           name,
     mama_fid_t            fid,
-    const mamaDateTime*   result,
+    const mamaDateTime**  result,
     mama_size_t*          resultLen)
 {
     mamaMsgImpl*    impl     = (mamaMsgImpl*)msg;
@@ -3048,7 +3107,7 @@ mamaMsg_getVectorPrice (
     const mamaMsg         msg,
     const char*           name,
     mama_fid_t            fid,
-    const mamaPrice*      result,
+    const mamaPrice**     result,
     mama_size_t*          resultLen)
 {
     mamaMsgImpl*    impl     = (mamaMsgImpl*)msg;

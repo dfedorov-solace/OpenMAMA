@@ -27,6 +27,7 @@
 #include <mama/msg.h>
 #include <mama/inbox.h>
 #include <string>
+#include <vector>
 #include "MamaSubscriptionImpl.h"
 #include <mama/queue.h>
 #include <mama/MamaQueue.h>
@@ -37,6 +38,7 @@ namespace Wombat
     /******************************************************************************
      * Mama Implementation
      */
+    std::vector<MamaQueue*> Mama::mDefaultQueueWrappers;
 
     const char* Mama::getVersion (mamaBridge bridgeImpl)
     {
@@ -179,6 +181,13 @@ namespace Wombat
         if (0 == refCount)
         {
             MamaReservedFields::uninitReservedFields();
+            for (std::vector<MamaQueue*>::iterator iter = Mama::mDefaultQueueWrappers.begin(); iter != Mama::mDefaultQueueWrappers.end(); ++iter)
+            {
+                MamaQueue* defaultQueue = *iter;
+                defaultQueue->setCValue(NULL);  // middleware  bridge's respobsibility to clean up the c-queue
+                delete(defaultQueue);           //delete CPP wrapper
+            }
+            Mama::mDefaultQueueWrappers.clear();
         }
 
         return refCount;
@@ -312,6 +321,7 @@ namespace Wombat
             {
                 defaultQueue = new MamaQueue(defaultQueueC);
                 mamaQueue_setClosure(defaultQueueC, (void*) defaultQueue);
+                Mama::mDefaultQueueWrappers.push_back(defaultQueue);
             }
             return defaultQueue;
         }

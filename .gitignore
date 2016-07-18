@@ -99,6 +99,7 @@ openmama_install*
 *.opensdf
 *.sdf
 *.suo
+<<<<<<< HEAD
 *.userosscache
 *.sln.docstates
 *.userprefs

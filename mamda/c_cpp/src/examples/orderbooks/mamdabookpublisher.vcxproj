@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{54FCF8E4-7A3E-4C76-B65A-7360EA701D4C}</ProjectGuid>
-    <RootNamespace>listenerBookPublisher</RootNamespace>
+    <ProjectGuid>{486D57E2-68C9-4E16-8ADE-00E667D051B6}</ProjectGuid>
+    <RootNamespace>bookpublisher</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>mamdalistenerBookPublisher</ProjectName>
+    <ProjectName>mamdabookpublisher</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -183,15 +183,12 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\openmamdaexamplecommon.vcxproj">
+    <ProjectReference Include="..\mamdaexamplecommon.vcxproj">
       <Project>{f91cb36e-8e8e-468f-8eff-0f01f4aa83b1}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="listenerBookPublisher.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClCompile Include="bookpublisher.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
